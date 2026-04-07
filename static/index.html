@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Reminder Tool</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active">
+        <div class="container">
+            <div class="logo-container">
+                <h1>✨ Vaishnavi Silks</h1>
+                <h2 style="font-size: 1.2rem; color: #666; margin: 0.5rem 0;">Payment Reminder System</h2>
+                <p style="font-size: 0.875rem; color: #999;">Powered by CM</p>
+            </div>
+            
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="showLoginTab()">Login</button>
+                    <button class="tab-btn" onclick="showRegisterTab()">Register</button>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="loginForm" class="form">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="loginUsername" required placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter password">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                    <div id="loginError" class="error-message hidden"></div>
+                </form>
+                
+                <!-- Register Form -->
+                <form id="registerForm" class="form hidden">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="registerUsername" required placeholder="Choose username">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="registerEmail" required placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="registerPassword" required placeholder="Choose password">
+                    </div>
+                    <div class="form-group">
+                        <label>Shop Name (Optional)</label>
+                        <input type="text" id="registerShopName" placeholder="Enter shop name">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Register</button>
+                    <div id="registerError" class="error-message hidden"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboardScreen" class="screen">
+        <div class="navbar">
+            <div>
+                <h2>Dashboard</h2>
+                <small style="font-size: 0.7rem; opacity: 0.8;">Vaishnavi Silk</small>
+            </div>
+            <button onclick="logout()" class="btn btn-small">Logout</button>
+        </div>
+        
+        <div class="container">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCustomers">0</div>
+                    <div class="stat-label">Total Customers</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-value" id="paidThisMonth">0</div>
+                    <div class="stat-label">Paid This Month</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-value" id="pendingThisMonth">0</div>
+                    <div class="stat-label">Pending This Month</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-value" id="totalCollection">₹0</div>
+                    <div class="stat-label">Total Collection - Current Month</div>
+                </div>
+            </div>
+            
+            <!-- Pending Customers Today -->
+            <div class="card">
+                <h3>Today's Pending Follow-ups</h3>
+                <div id="pendingList" class="pending-list">
+                    <p class="text-center text-gray">No pending payments</p>
+                </div>
+            </div>
+            
+            <!-- Reminder Success Message -->
+            <div id="reminderSuccess" class="success-message hidden"></div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button onclick="showScreen('customersScreen')" class="btn btn-primary btn-block">
+                    👥 View Customers
+                </button>
+                <button onclick="showScreen('paymentsScreen')" class="btn btn-secondary btn-block">
+                    💳 View Payments
+                </button>
+                <button onclick="showScreen('collectionsScreen')" class="btn btn-block" style="background-color: #10b981; color: white;">
+                    📊 Monthly Collections
+                </button>
+                <button onclick="showScreen('addCustomerScreen')" class="btn btn-success btn-block">
+                    ➕ Add New Customer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customers List Screen -->
+    <div id="customersScreen" class="screen">
+        <div class="navbar">
+            <button onclick="showScreen('dashboardScreen')" class="btn btn-small">← Back</button>
+            <div>
+                <h2>Vaishnavi Silk</h2>
+                <small style="font-size: 0.7rem; opacity: 0.8;">Customers</small>
+            </div>
+            <button onclick="showScreen('addCustomerScreen')" class="btn btn-small">+ Add</button>
+        </div>
+        
+        <div class="container">
+            <div class="search-box">
+                <input type="text" id="customerSearch" placeholder="Search by name or phone..." onkeyup="searchCustomers()">
+            </div>
+            
+            <div id="customersList" class="customers-list">
+                <p class="text-center text-gray">Loading customers...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Screen -->
+    <div id="addCustomerScreen" class="screen">
+        <div class="navbar">
+            <button onclick="showScreen('dashboardScreen')" class="btn btn-small">← Back</button>
+            <div>
+                <h2>Vaishnavi Silk</h2>
+                <small style="font-size: 0.7rem; opacity: 0.8;">Add Customer</small>
+            </div>
+            <div></div>
+        </div>
+        
+        <div class="container">
+            <div class="card">
+                <form id="addCustomerForm" class="form">
+                    <div class="form-group">
+                        <label>Customer Name *</label>
+                        <input type="text" id="customerName" required placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="customerPhone" required placeholder="10-digit phone number" 
+                               pattern="[0-9]{10,15}" maxlength="15" onblur="checkPhoneExists()">
+                        <small id="phoneCheckMessage" style="display: none; margin-top: 0.25rem;"></small>
+                    </div>
+                    <div class="form-group">
+                        <label>Monthly Amount (₹) *</label>
+                        <input type="number" id="customerAmount" required placeholder="e.g., 1000">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date *</label>
+                        <input type="date" id="customerStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (Months) *</label>
+                        <input type="number" id="customerDuration" required placeholder="e.g., 12" min="1" max="120">
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">Add Customer</button>
+                    <div id="addCustomerError" class="error-message hidden"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Details Screen -->
+    <div id="customerDetailsScreen" class="screen">
+        <div class="navbar">
+            <button onclick="showScreen('customersScreen')" class="btn btn-small">← Back</button>
+            <div>
+                <h2>Vaishnavi Silk</h2>
+                <small style="font-size: 0.7rem; opacity: 0.8;">Customer Details</small>
+            </div>
+            <div></div>
+        </div>
+        
+        <div class="container">
+            <div class="card">
+                <h3 id="detailCustomerName">Customer Name</h3>
+                <p><strong>Phone:</strong> <span id="detailCustomerPhone"></span></p>
+                <p><strong>Monthly Amount:</strong> ₹<span id="detailCustomerAmount"></span></p>
+                <p><strong>Start Date:</strong> <span id="detailCustomerStartDate"></span></p>
+                <p><strong>Duration:</strong> <span id="detailCustomerDuration"></span> months</p>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                    <button id="sendReminderBtn" onclick="sendCustomerReminder()" class="btn-reminder" style="flex: 1; min-width: 200px;">
+                        &#128276; Send Reminder
+                    </button>
+                    <button onclick="deleteCustomer()" class="btn" style="flex: 1; min-width: 200px; background-color: #dc3545; color: white;">
+                        🗑️ Delete Customer
+                    </button>
+                </div>
+                <div id="reminderMessage" class="reminder-message hidden"></div>
+                <div class="stats-row">
+                    <div class="stat-item green">
+                        <strong>Total Paid</strong>
+                        <div>₹<span id="detailTotalPaid">0</span></div>
+                    </div>
+                    <div class="stat-item red">
+                        <strong>Total Pending</strong>
+                        <div>₹<span id="detailTotalPending">0</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Payment History</h3>
+                <div id="paymentHistoryList" class="payment-history">
+                    <p class="text-center text-gray">Loading payments...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Screen -->
+    <div id="paymentsScreen" class="screen">
+        <div class="navbar">
+            <button onclick="showScreen('dashboardScreen')" class="btn btn-small">← Back</button>
+            <div>
+                <h2>Vaishnavi Silk</h2>
+                <small style="font-size: 0.7rem; opacity: 0.8;">Payments</small>
+            </div>
+            <div></div>
+        </div>
+        
+        <div class="container">
+            <!-- Month Filter -->
+            <div class="month-filter">
+                <label for="monthSelect">Select Month:</label>
+                <select id="monthSelect" onchange="filterPaymentsByMonth()">
+                    <option value="current">Current Month</option>
+                    <option value="all">All Months</option>
+                </select>
+            </div>
+            
+            <div class="filter-tabs">
+                <button class="filter-btn active" onclick="filterPayments('all')">All</button>
+                <button class="filter-btn" onclick="filterPayments('pending')">Pending</button>
+                <button class="filter-btn" onclick="filterPayments('paid')">Paid</button>
+            </div>
+            
+            <div id="paymentsList" class="payments-list">
+                <p class="text-center text-gray">Loading payments...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Collections Screen -->
+    <div id="collectionsScreen" class="screen">
+        <div class="navbar">
+            <button onclick="showScreen('dashboardScreen')" class="btn btn-small">← Back</button>
+            <div>
+                <h2>Monthly Collections</h2>
+                <small style="font-size: 0.7rem; opacity: 0.8;">Vaishnavi Silk</small>
+            </div>
+            <div></div>
+        </div>
+        
+        <div class="container">
+            <div class="card">
+                <h3>Collections Summary</h3>
+                <div id="collectionsTotal" style="font-size: 1.5rem; font-weight: 700; color: #10b981; margin: 1rem 0;">
+                    Total: ₹0
+                </div>
+            </div>
+            
+            <div id="collectionsList" class="collections-list">
+                <p class="text-center text-gray">Loading collections...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with Branding -->
+    <div id="appFooter" class="app-footer">
+        <p>✨ <strong>Vaishnavi Silks Kanapuraka</strong> - Payment Reminder System</p>
+        <p style="font-size: 0.8rem; opacity: 0.7;">Powered by CM | © 2026</p>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
