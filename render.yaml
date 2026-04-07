@@ -2,6 +2,7 @@ services:
   - type: web
     name: vaishnavi-silks-payment-reminder
     env: python
+    pythonVersion: 3.11
     region: oregon
     plan: free
     branch: main
